@@ -18,17 +18,21 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
           s = s.replace('jmdauditfirm.com', 'jmdaudit.com')
-          s = s.replace('JMD Audit Firm | Audit • Tax • Consultancy', 'JMD Audit Firm | Audit • Tax • Consultancy')
+          s = s.replace('assets/jmd-logo.svg', 'assets/jmd-logo-official.svg')
           s = re.sub(r'<strong>40\+</strong><span>Companies Audited</span>', '<strong>100+</strong><span>Clients Served</span>', s)
-          s = re.sub(r'<div class="footlogo">JMD<span>\.</span></div>', '<div class="footlogo"><img src="assets/jmd-logo.svg" alt="JMD Audit Firm" style="width:150px;height:auto;max-height:70px;object-fit:contain;background:#fff;border-radius:6px;padding:3px;display:block;"></div>', s)
+          s = re.sub(r'<div class="footlogo">JMD<span>\.</span></div>', '<div class="footlogo"><img src="assets/jmd-logo-official.svg" alt="JMD Audit Firm" style="width:150px;height:auto;max-height:70px;object-fit:contain;background:#fff;border-radius:6px;padding:3px;display:block;"></div>', s)
           s = s.replace('<li>Beirut, Lebanon</li><li>info@jmdaudit.com</li><li>+961 XX XXX XXX</li>', '<li>Baouchriyeh, Matn, Lebanon</li><li><a href="mailto:Info@JMDaudit.com" style="color:inherit;">Info@JMDaudit.com</a></li><li><a href="tel:+96171010297" style="color:inherit;">+961 71 01 02 97</a></li>')
           s = s.replace('mailto:info@jmdaudit.com', 'mailto:Info@JMDaudit.com')
           s = s.replace('href="https://wa.me/96179121413', 'href="https://wa.me/96171010297')
+          s = s.replace('https://wa.me/96179121413', 'https://wa.me/96171010297')
+          s = s.replace('Beirut, Lebanon', 'Baouchriyeh, Matn, Lebanon')
+          s = s.replace('+961 79 12 14 13', '+961 71 01 02 97')
+          s = s.replace('+96179121413', '+96171010297')
           p.write_text(s, encoding='utf-8')
           PY
       - name: Commit website updates
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html assets/jmd-logo.svg
-          git diff --cached --quiet || (git commit -m 'Update logo, client count and contact details' && git push)
+          git add index.html assets/jmd-logo-official.svg
+          git diff --cached --quiet || (git commit -m 'Use official JMD logo across website' && git push)
