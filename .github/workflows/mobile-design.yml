@@ -1,0 +1,34 @@
+name: Improve Mobile Website Experience
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  mobile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply mobile-first refinements
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          css = r'''\n@media (max-width: 800px) {\n  body { overflow-x:hidden; }\n  .container { width: calc(100% - 32px); }\n  nav { padding: 14px 0; position:absolute; }\n  .nav { justify-content:flex-start; }\n  .brand { gap:10px; }\n  .brand img { width:58px !important; height:58px !important; object-fit:contain; }\n  .brand span { font-size:16px; letter-spacing:.6px; }\n  .brand small { font-size:7px; letter-spacing:1.5px; margin-top:1px; }\n  .hero { min-height: 690px !important; align-items:center; background-position:center; }\n  .hero-content { max-width:none; padding-top:85px; }\n  .eyebrow { font-size:10px; letter-spacing:2.5px; margin-bottom:14px; }\n  .hero h1 { font-size: clamp(43px, 12vw, 54px) !important; line-height:1.03; margin-bottom:18px; }\n  .hero p { font-size:16px; line-height:1.55; margin-bottom:24px; }\n  .buttons { display:grid; grid-template-columns:1fr; gap:10px; }\n  .primary, .outline { width:100%; text-align:center; padding:15px 18px; }\n  .stats { padding:20px 0; }\n  .statsgrid { grid-template-columns:1fr 1fr !important; gap:0; }\n  .stat { padding:10px 8px; border-right:1px solid rgba(255,255,255,.12); }\n  .stat:nth-child(2) { border-right:0; }\n  .stat:nth-child(n+3) { display:none; }\n  .stat strong { font-size:24px; }\n  .stat span { font-size:11px; }\n  section { padding:62px 0; }\n  .aboutgrid, .whygrid { gap:28px; }\n  .aboutimg { height:230px !important; }\n  .section-title { font-size:34px !important; line-height:1.12; }\n  .section-text { font-size:15px; line-height:1.6; }\n  .aboutbox { margin-top:20px; padding:18px; }\n  .servicesgrid { margin-top:28px; gap:10px; }\n  .service { padding:20px; }\n  .service .num { margin-bottom:10px; font-size:10px; }\n  .service h3 { font-size:20px; margin-bottom:5px; }\n  .service p { font-size:13px; line-height:1.5; }\n  .features { gap:18px; }\n  .feature { padding-top:14px; }\n  .feature h3 { font-size:16px; margin:5px 0; }\n  .feature p { font-size:13px; line-height:1.5; }\n  .industrylist { margin-top:25px; gap:7px; }\n  .industry { padding:8px 12px; font-size:12px; }\n  .cta h2 { font-size:39px; }\n  .cta p { font-size:14px; }\n  .form { margin-top:25px; gap:9px; }\n  .form input, .form select, .form textarea { padding:12px; font-size:14px; }\n  footer { padding:42px 0 18px; }\n  .footgrid { gap:28px; padding-bottom:28px; }\n  .wa { right:16px; bottom:16px; width:56px; height:56px; }\n}\n'''
+          marker = '</style>'
+          if css.strip() not in s:
+              s = s.replace(marker, css + marker, 1)
+              p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Create cleaner dedicated mobile website layout'
+          git push
