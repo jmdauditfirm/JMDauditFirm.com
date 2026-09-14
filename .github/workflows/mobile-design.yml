@@ -20,48 +20,67 @@ jobs:
           p = Path('index.html')
           s = p.read_text()
 
-          # Repair the previous workflow's escaped newlines and use the exact clean PNG logo.
+          # Clean up the old escaped CSS and always use the repository logo asset.
           s = s.replace('\\n', '\n')
-          s = s.replace('assets/jmd-logo-official.svg', 'assets/jmd-logo.png')
+          s = s.replace('assets/jmd-logo.png', 'assets/jmd-logo-official.svg')
 
           css = """
           @media (max-width:800px) {
             body{overflow-x:hidden}
             .container{width:calc(100% - 30px)}
             nav{padding:10px 0}
-            .links,.navbtn{display:none}
-            .brand{gap:8px}
-            .brand img{width:64px !important;height:64px !important;object-fit:contain}
-            .brand span{font-size:15px;line-height:1.1}
-            .brand small{font-size:6px;letter-spacing:1px}
+            .nav{justify-content:space-between}
+            .brand{gap:7px;min-width:0}
+            .brand img{width:48px !important;height:48px !important;object-fit:contain;flex:none}
+            .brand span{font-size:14px;line-height:1.1;white-space:nowrap}
+            .brand small{font-size:5.5px;letter-spacing:.8px}
+            .mobile-menu-btn{display:flex !important;width:40px;height:40px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;align-items:center;justify-content:center;font-size:21px;cursor:pointer}
             .hero{min-height:600px !important}
-            .hero-content{padding-top:70px}
-            .hero h1{font-size:44px !important;line-height:1.05}
+            .hero-content{padding-top:68px}
+            .hero h1{font-size:43px !important;line-height:1.05}
             .hero p{font-size:15px;line-height:1.5}
-            .buttons{display:grid;grid-template-columns:1fr;gap:10px}
+            .buttons{display:grid;grid-template-columns:1fr;gap:9px}
             .primary,.outline{width:100%;text-align:center}
-            .stats{padding:15px 0}
-            .statsgrid{grid-template-columns:1fr 1fr !important;gap:0}
-            .stat:nth-child(n+3){display:none}
-            section{padding:52px 0}
-            .aboutgrid,.whygrid{grid-template-columns:1fr;gap:28px}
-            .aboutimg{height:210px !important}
-            .section-title{font-size:33px !important}
-            .servicesgrid{grid-template-columns:1fr 1fr !important;gap:10px;margin-top:24px}
-            .service{padding:16px}
-            .service h3{font-size:18px;line-height:1.15}
-            .service p{font-size:12px;line-height:1.45}
-            .features{grid-template-columns:1fr !important;gap:18px}
-            .industrylist{gap:7px;margin-top:24px}
-            .industry{padding:7px 10px;font-size:11px}
-            .cta h2{font-size:38px}
-            .form{grid-template-columns:1fr !important;gap:9px}
-            .form textarea,.form button{grid-column:auto}
-            .footgrid{grid-template-columns:1fr !important;gap:24px}
-            .wa{right:15px;bottom:15px;width:54px;height:54px}
+            .stats{padding:14px 0}.statsgrid{grid-template-columns:1fr 1fr !important;gap:0}.stat:nth-child(n+3){display:none}.stat strong{font-size:23px}.stat span{font-size:10px}
+            section{padding:52px 0}.aboutgrid,.whygrid{grid-template-columns:1fr;gap:28px}.aboutimg{height:210px !important}.section-title{font-size:33px !important}.section-text{font-size:15px;line-height:1.6}
+            .servicesgrid{grid-template-columns:1fr 1fr !important;gap:9px;margin-top:24px}.service{padding:15px}.service .num{margin-bottom:8px;font-size:9px}.service h3{font-size:17px;line-height:1.15}.service p{font-size:11px;line-height:1.45}
+            .features{grid-template-columns:1fr !important;gap:18px}.industrylist{gap:7px;margin-top:24px}.industry{padding:7px 10px;font-size:11px}.cta h2{font-size:38px}.cta p{font-size:14px}.form{grid-template-columns:1fr !important;gap:9px}.form textarea,.form button{grid-column:auto}.footgrid{grid-template-columns:1fr !important;gap:24px}.wa{right:15px;bottom:15px;width:54px;height:54px}
+            .mobile-menu{display:none;position:absolute;top:68px;left:0;right:0;background:rgba(5,14,24,.98);border-top:1px solid rgba(255,255,255,.12);padding:8px 15px 12px;box-shadow:0 15px 30px rgba(0,0,0,.25)}
+            .mobile-menu.open{display:block}
+            .mobile-category{border-bottom:1px solid rgba(255,255,255,.1)}
+            .mobile-category:last-child{border-bottom:0}
+            .mobile-category > button,.mobile-category > a{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 4px;background:none;border:0;color:#fff;font:600 14px 'DM Sans',sans-serif;text-align:left;cursor:pointer}
+            .mobile-sub{display:none;padding:0 4px 9px}.mobile-sub.open{display:block}.mobile-sub a{display:block;color:#aeb6c1;padding:8px 4px;font-size:12px}.mobile-sub a:hover{color:var(--gold2)}
           }
+          @media (min-width:801px){.mobile-menu-btn,.mobile-menu{display:none !important}}
           """
           s = s.replace('</style>', css + '</style>', 1)
+
+          # Add a compact accordion menu immediately after the nav, only once.
+          if 'id="mobileMenu"' not in s:
+              menu = '''<div class="mobile-menu" id="mobileMenu">
+                <div class="mobile-category"><a href="#about" onclick="closeMobileMenu()">About <span>›</span></a></div>
+                <div class="mobile-category"><a href="#why" onclick="closeMobileMenu()">Why Us <span>›</span></a></div>
+                <div class="mobile-category"><button type="button" onclick="toggleServices()">Services <span id="servicesArrow">+</span></button>
+                  <div class="mobile-sub" id="mobileServices">
+                    <a href="#services" onclick="closeMobileMenu()">All Services</a>
+                    <a href="#services" onclick="closeMobileMenu()">External Auditing</a>
+                    <a href="#services" onclick="closeMobileMenu()">Internal Auditing</a>
+                    <a href="#services" onclick="closeMobileMenu()">Forensic Audit</a>
+                    <a href="#services" onclick="closeMobileMenu()">Tax & Compliance</a>
+                  </div>
+                </div>
+                <div class="mobile-category"><a href="#industries" onclick="closeMobileMenu()">Industries <span>›</span></a></div>
+                <div class="mobile-category"><a href="#contact" onclick="closeMobileMenu()">Book a Consultation <span>›</span></a></div>
+              </div>
+              <script>
+                function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open')}
+                function toggleServices(){var e=document.getElementById('mobileServices'),a=document.getElementById('servicesArrow');e.classList.toggle('open');a.textContent=e.classList.contains('open')?'−':'+'}
+                function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open')}
+              </script>'''
+              s = s.replace('</nav>', '</nav>' + menu, 1)
+              s = s.replace('<ul class="links">', '<button class="mobile-menu-btn" type="button" aria-label="Open menu" onclick="toggleMobileMenu()">☰</button><ul class="links">', 1)
+
           p.write_text(s)
           PY
       - name: Commit changes
@@ -69,5 +88,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Polish mobile layout and use clean logo'
+          git diff --cached --quiet || git commit -m 'Polish mobile logo and category navigation'
           git push
