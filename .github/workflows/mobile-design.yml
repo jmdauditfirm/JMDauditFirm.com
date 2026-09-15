@@ -24,9 +24,23 @@ jobs:
           s = s.replace('assets/jmd-logo.png', 'assets/jmd-logo.webp')
           s = s.replace('assets/jmd-logo-official.svg', 'assets/jmd-logo.webp')
           s = s.replace('assets/jmd-logo.svg', 'assets/jmd-logo.webp')
-          s = s.replace('BOOK A CONSULTATION', 'CONTACT')
+
+          # Restore the consultation CTA and add a separate Contact Us menu item.
+          s = s.replace('<a class="navbtn" href="#contact">CONTACT</a>', '<a class="navbtn" href="#contact">BOOK A CONSULTATION</a>')
+          old_nav = '<ul class="links"><li><a href="#about">About</a></li><li><a href="#services">Services</a></li><li><a href="#why">Why JMD</a></li><li><a href="#industries">Industries</a></li></ul><a class="navbtn" href="#contact">BOOK A CONSULTATION</a>'
+          new_nav = '<ul class="links"><li><a href="#about">About</a></li><li><a href="#services">Services</a></li><li><a href="#why">Why JMD</a></li><li><a href="#industries">Industries</a></li><li class="contact-nav"><button type="button" onclick="toggleDesktopContact()">Contact Us</button><div class="contact-dropdown" id="desktopContact"><a href="mailto:Info@JMDaudit.com">✉ Info@JMDaudit.com</a><a href="tel:+96171010297">☎ +961 71 01 02 97</a></div></li></ul><a class="navbtn" href="#contact">BOOK A CONSULTATION</a>'
+          if old_nav in s:
+              s = s.replace(old_nav, new_nav, 1)
 
           css = """
+          .contact-nav{position:relative;list-style:none}
+          .contact-nav>button{border:0;background:none;color:#fff;font:inherit;font-size:14px;cursor:pointer;padding:0}
+          .contact-nav>button:hover{color:var(--gold2)}
+          .contact-dropdown{display:none;position:absolute;top:28px;right:0;min-width:230px;background:rgba(5,14,24,.98);border:1px solid rgba(201,164,92,.45);box-shadow:0 15px 30px rgba(0,0,0,.28);padding:8px;z-index:30}
+          .contact-dropdown.open{display:block}
+          .contact-dropdown a{display:block !important;color:#dfe5ec !important;font-size:13px !important;padding:10px 11px;white-space:nowrap}
+          .contact-dropdown a:hover{color:var(--gold2) !important;background:rgba(255,255,255,.05)}
+
           @media (max-width:800px) {
             body{overflow-x:hidden}
             .container{width:calc(100% - 30px)}
@@ -78,17 +92,17 @@ jobs:
                   </div>
                 </div>
                 <div class="mobile-category"><a href="#industries" onclick="closeMobileMenu()">Industries <span>›</span></a></div>
-                <div class="mobile-category"><button type="button" onclick="toggleContact()">Contact <span id="contactArrow">+</span></button>
+                <div class="mobile-category"><button type="button" onclick="toggleContact()">Contact Us <span id="contactArrow">+</span></button>
                   <div class="mobile-sub" id="mobileContact">
                     <a href="mailto:Info@JMDaudit.com">✉ Info@JMDaudit.com</a>
-                    <a href="https://wa.me/96171010297" target="_blank" rel="noopener">WhatsApp +961 71 01 02 97</a>
+                    <a href="tel:+96171010297">☎ +961 71 01 02 97</a>
                   </div>
                 </div>
               </div>'''
               s = s[:start] + menu + s[end:]
 
-          if 'function toggleContact()' not in s:
-              s = s.replace('</script>', "function toggleContact(){var e=document.getElementById('mobileContact'),a=document.getElementById('contactArrow');e.classList.toggle('open');a.textContent=e.classList.contains('open')?'−':'+'}\n              </script>", 1)
+          if 'function toggleDesktopContact()' not in s:
+              s = s.replace('</script>', "function toggleDesktopContact(){var e=document.getElementById('desktopContact');if(e)e.classList.toggle('open')}\nfunction toggleContact(){var e=document.getElementById('mobileContact'),a=document.getElementById('contactArrow');e.classList.toggle('open');a.textContent=e.classList.contains('open')?'−':'+'}\n              </script>", 1)
 
           p.write_text(s)
           PY
@@ -97,5 +111,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Use exact uploaded logo and polish mobile layout'
+          git diff --cached --quiet || git commit -m 'Restore consultation button and add Contact Us dropdown'
           git push
