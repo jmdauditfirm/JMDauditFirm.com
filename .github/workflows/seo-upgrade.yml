@@ -1,0 +1,109 @@
+name: SEO Upgrade
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  seo:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Improve on-page SEO and structured data
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+
+          # Stronger, natural search intent in the title and description.
+          s = s.replace(
+              '<title>JMD Audit Firm | Audit, Tax & Consultancy in Lebanon</title>',
+              '<title>JMD Audit Firm | Audit, Accounting, Tax & Consultancy in Lebanon</title>'
+          )
+          s = s.replace(
+              '<meta name="description" content="JMD Audit Firm provides audit, tax, financial reporting, forensic audit and business advisory services in Lebanon and the MENA region.">',
+              '<meta name="description" content="JMD Audit Firm in Lebanon provides auditing, accounting and bookkeeping, tax, financial statements and analysis, company registration, CCIA support, forensic audit and business consultancy across Lebanon and MENA.">'
+          )
+          s = s.replace(
+              '<meta property="og:title" content="JMD Audit Firm | Audit, Tax & Consultancy">',
+              '<meta property="og:title" content="JMD Audit Firm | Audit, Accounting, Tax & Consultancy">'
+          )
+          s = s.replace(
+              '<meta property="og:description" content="Professional audit, tax and advisory services for businesses that want clarity and control.">',
+              '<meta property="og:description" content="Audit, accounting, bookkeeping, tax, financial analysis, company registration, CCIA support and business consultancy in Lebanon and MENA.">'
+          )
+
+          # Make the requested service terms part of the visible, useful content.
+          s = s.replace(
+              '<h3>Financial Reporting</h3><p>Clear financial information that helps management understand performance and make decisions.</p>',
+              '<h3>Financial Statements & Analysis</h3><p>Preparation and analysis of financial statements to understand performance, financial position and business trends.</p>'
+          )
+          s = s.replace(
+              '<h3>Company Registration</h3><p>Support throughout the process of establishing and structuring your business.</p>',
+              '<h3>Company Registration & CCIA</h3><p>Support with company registration, business setup and Chamber of Commerce, Industry and Agriculture (CCIA) requirements.</p>'
+          )
+          s = s.replace(
+              '<h3>Accounting & Payroll</h3><p>Reliable accounting records and payroll processes that keep your business financially organized.</p>',
+              '<h3>Accounting & Bookkeeping</h3><p>Reliable accounting, bookkeeping and payroll records that keep your business financially organized and ready for reporting.</p>'
+          )
+          s = s.replace(
+              '<h3>Investment Advisory</h3><p>Financial analysis and business insight to support smarter investment decisions.</p>',
+              '<h3>Financial Consultancy</h3><p>Practical financial consultancy, analysis and business advisory support for better decisions and sustainable growth.</p>'
+          )
+
+          # Add a natural keyword-rich service sentence without keyword stuffing.
+          marker = '<p class="section-text">From compliance to strategic financial insight, we help businesses stay in control and move forward.</p>'
+          replacement = '<p class="section-text">From audit and tax compliance to accounting, bookkeeping, financial statements and analysis, company registration, CCIA support and business consultancy, we help businesses stay in control and move forward.</p>'
+          s = s.replace(marker, replacement, 1)
+
+          # Add LocalBusiness/Organization structured data for clearer Google entity understanding.
+          schema = '''<script type="application/ld+json">
+          {
+            "@context":"https://schema.org",
+            "@type":["AccountingService","ProfessionalService"],
+            "@id":"https://jmdaudit.com/#business",
+            "name":"JMD Audit Firm",
+            "url":"https://jmdaudit.com/",
+            "logo":"https://jmdaudit.com/assets/jmd-logo.webp",
+            "image":"https://jmdaudit.com/assets/jmd-logo.webp",
+            "telephone":"+96171010297",
+            "email":"Info@JMDaudit.com",
+            "description":"JMD Audit Firm provides auditing, accounting and bookkeeping, tax, financial statements and analysis, forensic audit, company registration, CCIA support and business consultancy in Lebanon and the MENA region.",
+            "address":{"@type":"PostalAddress","addressLocality":"Baouchriyeh","addressRegion":"Matn","addressCountry":"LB"},
+            "areaServed":["Lebanon","MENA"],
+            "knowsAbout":["External Auditing","Internal Auditing","Forensic Audit","Taxation","NSSF","Accounting","Bookkeeping","Payroll","Financial Statements","Financial Analysis","Company Registration","Chamber of Commerce, Industry and Agriculture (CCIA)","Risk Management","Compliance","Financial Consultancy","Business Consultancy","Investment Advisory"],
+            "hasOfferCatalog":{"@type":"OfferCatalog","name":"JMD Audit Firm Services","itemListElement":[
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"External Auditing"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Internal Auditing"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Forensic Audit"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Taxation & NSSF"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Accounting & Bookkeeping"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Financial Statements & Analysis"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Company Registration & CCIA Support"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Financial & Business Consultancy"}},
+              {"@type":"Offer","itemOffered":{"@type":"Service","name":"Risk Management & Compliance"}}
+            ]}
+          }
+          </script>'''
+          # Replace the old schema block if present; otherwise add before </body>.
+          start = s.find('<script type="application/ld+json">')
+          end = s.find('</script>', start)
+          if start != -1 and end != -1:
+              s = s[:start] + schema + s[end+9:]
+          else:
+              s = s.replace('</body>', schema + '</body>', 1)
+
+          p.write_text(s)
+          PY
+      - name: Commit SEO changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Improve SEO keywords and business structured data'
+          git push
