@@ -20,9 +20,10 @@ jobs:
           p = Path('index.html')
           s = p.read_text()
 
-          # Use the clean repository SVG logo instead of the missing/pixelated raster asset.
-          s = s.replace('assets/jmd-logo.png', 'assets/jmd-logo.svg')
-          s = s.replace('assets/jmd-logo-official.svg', 'assets/jmd-logo.svg')
+          # Use the exact uploaded JMD logo asset.
+          s = s.replace('assets/jmd-logo.png', 'assets/jmd-logo.webp')
+          s = s.replace('assets/jmd-logo-official.svg', 'assets/jmd-logo.webp')
+          s = s.replace('assets/jmd-logo.svg', 'assets/jmd-logo.webp')
           s = s.replace('BOOK A CONSULTATION', 'CONTACT')
 
           css = """
@@ -60,9 +61,8 @@ jobs:
           """
           s = s.replace('</style>', css + '</style>', 1)
 
-          # Replace the mobile menu once, so the mobile structure stays compact and clean.
           start = s.find('<div class="mobile-menu" id="mobileMenu">')
-          end = s.find('</div>\n              <script>', start)
+          end = s.find('</div>\n      <script>', start)
           if start != -1 and end != -1:
               end += len('</div>')
               menu = '''<div class="mobile-menu" id="mobileMenu">
@@ -87,7 +87,6 @@ jobs:
               </div>'''
               s = s[:start] + menu + s[end:]
 
-          s = s.replace('function toggleServices(){var e=document.getElementById(\'mobileServices\'),a=document.getElementById(\'servicesArrow\');e.classList.toggle(\'open\');a.textContent=e.classList.contains(\'open\')?\'−\':\'+\'}', "function toggleServices(){var e=document.getElementById('mobileServices'),a=document.getElementById('servicesArrow');e.classList.toggle('open');a.textContent=e.classList.contains('open')?'−':'+'}")
           if 'function toggleContact()' not in s:
               s = s.replace('</script>', "function toggleContact(){var e=document.getElementById('mobileContact'),a=document.getElementById('contactArrow');e.classList.toggle('open');a.textContent=e.classList.contains('open')?'−':'+'}\n              </script>", 1)
 
@@ -98,5 +97,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Polish mobile logo categories and contact menu'
+          git diff --cached --quiet || git commit -m 'Use exact uploaded logo and polish mobile layout'
           git push
